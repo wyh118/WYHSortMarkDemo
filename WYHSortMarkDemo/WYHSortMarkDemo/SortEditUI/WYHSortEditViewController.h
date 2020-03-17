@@ -23,6 +23,11 @@ typedef NS_ENUM(NSInteger,WYHMoveAnimationOptions) {
 /// @param indexPath item的位置indexPath
 - (void)selectItemAtIndexPath:(NSIndexPath *)indexPath complete:(void(^)(NSArray *displayDatas,NSArray *noDisplayDatas,NSInteger row))complateBlock;
 
+/// 正在拖拽item
+/// @param fromIndexPath 当前的位置的索引
+/// @param toIndexPath 将要移动到位置的索引
+- (void)dragingItemChanged:(NSIndexPath *)fromIndexPath canMoveToIndexPath:(NSIndexPath *)toIndexPath complete:(void(^)(NSArray *displayDatas))complateBlock;
+
 
 @end
 

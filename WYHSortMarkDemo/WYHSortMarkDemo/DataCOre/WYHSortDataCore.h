@@ -25,6 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
  @param complateBlock complateBlock description
 */
 - (void)handleUpdateSortAtIndexPath:(NSIndexPath *)indexPath complete:(void(^)(NSArray *displayDatas,NSArray *noDisplayDatas,NSInteger row))complateBlock;
+/**
+ 正在拖拽item
+ @param fromIndexPath 当前的位置的索引
+ @param toIndexPath 将要移动到位置的索引
+*/
+- (void)handleDragingItemChanged:(NSIndexPath *)fromIndexPath canMoveToIndexPath:(NSIndexPath *)toIndexPath complete:(void(^)(NSArray *displayDatas))complateBlock;
 
 @end
 

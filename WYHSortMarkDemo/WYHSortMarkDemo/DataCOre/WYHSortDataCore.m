@@ -196,8 +196,8 @@
     if(displaySortCashs.count > 0){
         //如果沙盒中存储显示的分类数据，则立即显示本地储存的分类数据
         self.displayArray = displaySortCashs;
-        self.allSortArray = (NSMutableArray *)sortAllCashs;
-        self.noDisplayArray = (NSMutableArray *)[self getNoDisplayArray];
+        [self.allSortArray setArray:sortAllCashs];
+        [self.noDisplayArray setArray:[self getNoDisplayArray]];
         complateBlock(self.displayArray,self.noDisplayArray);
     }
     //无论沙盒中是否存有需要显示的分类数据，都要向服务端请求新数据
@@ -224,7 +224,7 @@
                 if (strongSelf.reduceObjects.count > 0) {
                     [bridglist removeObjectsInArray:strongSelf.reduceObjects];
                 }
-                saveAllList = [strongSelf extractCategoryNameDiff:bridglist fromArray:results];
+                saveAllList = bridglist;
                 NSMutableArray *saveNoDisplaylist = [[NSMutableArray alloc] initWithArray:saveAllList];
                 [saveNoDisplaylist removeObjectsInArray:displaySortCashs];
                 [strongSelf saveSortData:saveAllList plistPath:strongSelf.allPlistPath];
@@ -237,9 +237,9 @@
             NSIndexSet *firstIndexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0,1)];
             NSArray *firstSorts = [saveAllList objectsAtIndexes:firstIndexSet];
 
-            strongSelf.displayArray = (NSMutableArray *)firstSorts;
+            [strongSelf.displayArray setArray:firstSorts];
             strongSelf.allSortArray = saveAllList;
-            strongSelf.noDisplayArray = (NSMutableArray *)[strongSelf getNoDisplayArray];
+            [strongSelf.noDisplayArray setArray:[strongSelf getNoDisplayArray]];
             complateBlock(strongSelf.displayArray,strongSelf.noDisplayArray);
             [strongSelf saveSortData:saveAllList plistPath:strongSelf.allPlistPath];
             [strongSelf saveSortData:firstSorts plistPath:strongSelf.displayPlistPath];
@@ -271,43 +271,30 @@
     if (indexPath.section == 0) {
         id obj = [self.displayArray objectAtIndex:indexPath.row];
         [self.displayArray removeObject:obj];
-        self.noDisplayArray = (NSMutableArray *)[self getNoDisplayArray];
+        [self.noDisplayArray setArray:[self getNoDisplayArray]];
         row = [self.noDisplayArray indexOfObject:obj];
     }
     else if (indexPath.section == 1){
         id obj = [self.noDisplayArray objectAtIndex:indexPath.row];
         [self.displayArray addObject:obj];
-        self.noDisplayArray = (NSMutableArray *)[self getNoDisplayArray];
+        [self.noDisplayArray setArray:[self getNoDisplayArray]];
         row = self.displayArray.count - 1;
     }
     [self saveSortData:self.displayArray plistPath:self.displayPlistPath];
     complateBlock(self.displayArray,self.noDisplayArray,row);
 }
 
-//toArray为本地  fromArray为服务器更新
-- (NSMutableArray *)extractCategoryNameDiff:(NSArray *)toArray fromArray:(NSArray *)fromArray
+/**
+ 正在拖拽item
+ @param fromIndexPath 当前的位置的索引
+ @param toIndexPath 将要移动到位置的索引
+*/
+- (void)handleDragingItemChanged:(NSIndexPath *)fromIndexPath canMoveToIndexPath:(NSIndexPath *)toIndexPath complete:(void(^)(NSArray *displayDatas))complateBlock
 {
-    //以服务器数组个数为基准，更新本地数据信息，清楚重复id对象
-    NSMutableArray *array = [[NSMutableArray alloc] initWithCapacity:fromArray.count];
-    for (int i=0;i < fromArray.count;i++) {
-        [array addObject:@{}];
-    }
-    for (NSMutableDictionary *info in fromArray) {
-        NSString* predicateString = [NSString stringWithFormat:@"SELF.id == '%@'",info[@"id"]];
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateString];
-        NSArray* result = [toArray filteredArrayUsingPredicate:predicate];
-        if ([result count] > 0) {
-            //即将保存在本地分类结构
-            NSInteger integer = [toArray indexOfObject:(NSDictionary *)result.firstObject];
-            [array replaceObjectAtIndex:integer withObject:info];
-        }
-    }
-    NSMutableArray *lastArray = (NSMutableArray *)[array filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id  _Nullable evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings) {
-        NSDictionary *infoDic = (NSDictionary *)evaluatedObject;
-        return [infoDic objectForKey:@"id"];
-    }]];
-    return lastArray;
+    id obj = [self.displayArray objectAtIndex:fromIndexPath.row];
+    [self.displayArray removeObject:obj];
+    [self.displayArray insertObject:obj atIndex:toIndexPath.row];
+    complateBlock(self.displayArray);
 }
-
 
 @end

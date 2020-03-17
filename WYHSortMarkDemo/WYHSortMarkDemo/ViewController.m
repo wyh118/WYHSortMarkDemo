@@ -56,5 +56,10 @@
     }];
 }
 
+- (void)dragingItemChanged:(NSIndexPath *)fromIndexPath canMoveToIndexPath:(NSIndexPath *)toIndexPath complete:(nonnull void (^)(NSArray * _Nonnull))complateBlock
+{
+    [self.dataCore handleDragingItemChanged:fromIndexPath canMoveToIndexPath:toIndexPath complete:complateBlock];
+}
+
 
 @end

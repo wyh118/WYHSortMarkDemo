@@ -271,12 +271,16 @@ static CGFloat const kItemMarginY = 15.0f;
         if (![self collectionView:_collectionView itemAtIndexPath:previousIndexPath canMoveToIndexPath:newIndexPath]) {
             return;
         }
-        id obj = [self.displayArray objectAtIndex:self.selectedIndexPath.row];
-        [self.displayArray removeObject:obj];
-        [self.displayArray insertObject:obj atIndex:newIndexPath.row];
-                
-        [self.collectionView moveItemAtIndexPath:previousIndexPath toIndexPath:newIndexPath];
-        self.selectedIndexPath = newIndexPath;
+        
+        if ([self.delegate respondsToSelector:@selector(dragingItemChanged:canMoveToIndexPath:complete:)]) {
+            __weak typeof(self) weakSelf = self;
+            [self.delegate dragingItemChanged:previousIndexPath canMoveToIndexPath:newIndexPath complete:^(NSArray * _Nonnull displayDatas) {
+                __strong typeof(self) strongSelf = weakSelf;
+                [strongSelf.displayArray setArray:displayDatas];
+                [strongSelf.collectionView moveItemAtIndexPath:previousIndexPath toIndexPath:newIndexPath];
+                strongSelf.selectedIndexPath = newIndexPath;
+            }];
+        }
     }
 }
 
